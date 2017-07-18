@@ -1,9 +1,9 @@
-import os, sys, time, json, csv
+import os, sys, time, json, csv, io
 from collections import namedtuple
 from abc import ABCMeta
 from abc import abstractmethod
 
-ProfileData = namedtuple('ProfileData', ['Artist Name', 'Artist Login', 'File create date/time', 'Follower Count', 'Posts'])
+ProfileData = namedtuple('ProfileData', ['Artist_Name', 'Artist_Login', 'File_create_datetime', 'Follower_Count', 'Posts'])
 
 class CrawlerProto(object):
 
@@ -29,11 +29,11 @@ class CrawlerProto(object):
 		self.download_if_not_present(self.profiles_file_name)	
 
 	@abstractmethod
-	def query(self, user_name):
+	def query(self, query_data):
 		"""
 
 		Args:
-			user_name: Username to be queried
+			query_data: Terms of the query
 		Returns:
 			Raw data returned by the crawl of a profile.
 
@@ -54,7 +54,7 @@ class CrawlerProto(object):
 
 	def __iter__(self):
 		for key in self.list_keys():
-			yield profiles[key]
+			yield self.profiles[key]
 
 		raise StopIteration()
 
@@ -68,6 +68,7 @@ class CrawlerProto(object):
 			return self.profiles.keys()
 
 	def download_if_not_present(self, profiles_file_name):
+		self.profiles = {}
 		with open(profiles_file_name, 'r') as csvfile: 
 			reader = csv.reader(csvfile, delimiter=',', quotechar = '|')
 			for row in reader:
@@ -78,10 +79,11 @@ class CrawlerProto(object):
 				self.profiles[target] = [artistName, target, startDateTime, endDateTime]
 
 	def save(self, data):
-		formatted_data = self.format(data)
+		formatted_data = self.format(data)._asdict()
 
-		save_location = self.results_directory + data['Artist Name'] +'.json'
+		save_location = self.results_directory + formatted_data['Artist_Name'] +'.json'
 
-		with io.open(save_location, 'w', encoding = "utf-8") as f:
-        	json.dump(data._asdict, f, indent = 4, ensure_ascii=False)
+		#with io.open(save_location, 'w', encoding = "utf-8") as f:
+		with open(save_location, 'w') as f:
+			json.dump(formatted_data, f, indent = 4, ensure_ascii=False)
 
