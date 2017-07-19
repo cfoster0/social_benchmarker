@@ -34,7 +34,6 @@ class FacebookCrawler(CrawlerProto):
 
 		#Get message, comments and reactions from feed.
 		target_pool = pp.ProcessPool(4)
-		#target_pool = Pool()
 		postList = target_pool.map(self._getFeed, feed_list)
 
 		followerCount_url = 'https://graph.facebook.com/'+target+'/?fields=fan_count&'+self._getToken()

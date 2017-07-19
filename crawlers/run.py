@@ -1,7 +1,7 @@
 import argparse
 
 from facebook_crawler import FacebookCrawler
-#from instagram_crawler import InstagramCrawler
+from instagram_crawler import InstagramCrawler
 
 def main():
 
@@ -24,14 +24,19 @@ def main():
 		fbc.set_profiles(args.inputs)
 		crawlers.append(fbc)
 
-	#if args.instagram is True:
-	#	igc = InstagramCrawler(args.results)
-	#	igc.set_profiles(args.inputs)
-	#	crawlers.append(igc)
+	if args.instagram is True:
+		igc = InstagramCrawler(args.results)
+		igc.set_profiles(args.inputs)
+		crawlers.append(igc)
 
 	for crawler in crawlers:
 		for profile in crawler:
-			crawler.save(crawler.query(profile))
+			try:
+				raw = crawler.query(profile)
+				crawler.save(raw)
+			except ValueError as ve:
+				print(ve)
+				continue
 
 if __name__ == '__main__':
 	main()

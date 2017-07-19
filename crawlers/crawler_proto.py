@@ -1,4 +1,4 @@
-import os, sys, time, json, csv, io
+import os, sys, time, json, csv
 from collections import namedtuple
 from abc import ABCMeta
 from abc import abstractmethod
@@ -19,10 +19,6 @@ class CrawlerProto(object):
 		"""
 		self.crawl_type = crawl_type
 		self.results_directory = results_directory
-
-	#def set_times(self, start, end):
-	#	self.start = start
-	#	self.end = end
 
 	def set_profiles(self, profiles_file_name):
 		self.profiles_file_name = profiles_file_name
@@ -83,7 +79,6 @@ class CrawlerProto(object):
 
 		save_location = self.results_directory + formatted_data['Artist_Name'] +'.json'
 
-		#with io.open(save_location, 'w', encoding = "utf-8") as f:
 		with open(save_location, 'w') as f:
 			json.dump(formatted_data, f, indent = 4, ensure_ascii=False)
 
