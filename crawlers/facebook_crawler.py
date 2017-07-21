@@ -1,7 +1,6 @@
-import requests, os, time, json, io, warnings, argparse, sys
+import requests, os, time, json, warnings, argparse, sys
 
 from datetime import datetime
-import pathos.pools as pp 
 from crawler_proto import CrawlerProto, ProfileData
 
 class FacebookCrawler(CrawlerProto):
@@ -30,11 +29,12 @@ class FacebookCrawler(CrawlerProto):
 		except:
 			print("No posts in specified range for "+target+". Please expand the time range to allow for more posts")
 
-		feed_list = [str(i) for i in feed_list] 	    
+		#feed_list = [str(i) for i in feed_list] 	    
 
 		#Get message, comments and reactions from feed.
-		target_pool = pp.ProcessPool(4)
-		postList = target_pool.map(self._getFeed, feed_list)
+		#target_pool = pp.ProcessPool(4)
+		#postList = target_pool.map(self._getFeed, feed_list)
+		postList = [self._getFeed(item) for item in feed_list]
 
 		followerCount_url = 'https://graph.facebook.com/'+target+'/?fields=fan_count&'+self._getToken()
 		followerCount = self._getFollowerCount(self._getRequests(followerCount_url))
@@ -109,7 +109,10 @@ class FacebookCrawler(CrawlerProto):
 
 	def _getFollowerCount(self, followerCount_req):
 		followerCount_req = followerCount_req['followerCount_req'] if 'followerCount_req' in followerCount_req else followerCount_req
-		return followerCount_req['fan_count']
+		if 'fan_count' in followerCount_req:
+			return followerCount_req['fan_count']
+		else:
+			return None
 
 	def _getFeedType(self, feedType_req):
 			feedType_req = feedType_req['feedType_req'] if 'feedType_req' in feedType_req else feedType_req
@@ -117,7 +120,10 @@ class FacebookCrawler(CrawlerProto):
 
 	def _getMessage(self, message_req):
 			message_req = message_req['message_req'] if 'message_req' in message_req else message_req
-			return message_req['message']
+			if 'message' in message_req:
+				return message_req['message'] 
+			else:
+				return None
 
 	def _getOptimizedReactions(self, opt_reactions):
 			opt_reactions = opt_reactions['opt_reactions'] if 'opt_reactions' in opt_reactions else opt_reactions
@@ -142,7 +148,10 @@ class FacebookCrawler(CrawlerProto):
 
 	def _getShares(self, share_url):
 		share_url = share_url['share_url'] if 'share_url' in share_url else share_url
-		return (share_url['shares'])['count']
+		if 'shares' in share_url:
+			return (share_url['shares'])['count']
+		else:
+			return 0 
 
 	def _getFeed(self, feed_id):
 
@@ -154,7 +163,7 @@ class FacebookCrawler(CrawlerProto):
 		feed_type_url = feed_url + '?fields=type&' + self._getToken()
 		feed_type = self._getFeedType(self._getRequests(feed_type_url))
 		post['type'] = feed_type
-
+		
 		share_url = feed_url + '?fields=shares&' + self._getToken()
 		share_count = self._getShares(self._getRequests(share_url))
 		post['shares'] = share_count

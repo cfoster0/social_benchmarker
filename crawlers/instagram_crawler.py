@@ -1,10 +1,12 @@
-import requests, os, time, json, io, warnings, argparse, sys
+import requests, sys, os, time, json, warnings, argparse, sys
 
 import pytz
 
 from datetime import datetime
 import pathos.pools as pp 
 from crawler_proto import CrawlerProto, ProfileData
+
+#querycounter = 0
 
 class InstagramCrawler(CrawlerProto):
 
@@ -24,11 +26,21 @@ class InstagramCrawler(CrawlerProto):
 		since = datetime.strptime(query_data[2], '%y-%m-%d %H:%M:%S')
 		until = datetime.strptime(query_data[3], '%y-%m-%d %H:%M:%S')
 
+		#global querycounter
+		#querycounter += 1
+
+		requestcounter = 0
+		failedcounter = 0
+
 		while True:
 			try:
-				profile_data = requests.get('https://instagram.com/{target}/?__a=1'.format(target=target))
+				requestcounter += 1
+				profile_data = requests.get('https://instagram.com/{target}/?__a=1'.format(target=target), stream=True)
+				#print('https://instagram.com/{target}/?__a=1'.format(target=target))
+				break
 			except requests.exceptions.ConnectionError:
-				time.sleep(1)
+				failedcounter += 1
+				time.sleep(0.1)
 
 		if not (profile_data.status_code is requests.codes.ok):
 			raise ValueError('Profile {target} was not found on Instagram.'.format(target=target))
@@ -55,13 +67,15 @@ class InstagramCrawler(CrawlerProto):
 		while True:
 			while True:
 				try:
-					new_data = requests.get('https://instagram.com/{target}/?__a=1&max_id={id_next_page}'.format(target=target, id_next_page=id_next_page))
+					requestcounter += 1
+					new_data = requests.get('https://instagram.com/{target}/?__a=1&max_id={id_next_page}'.format(target=target, id_next_page=id_next_page), stream=True)
+					#print('https://instagram.com/{target}/?__a=1&max_id={id_next_page}'.format(target=target, id_next_page=id_next_page))
 					break
 				except requests.exceptions.ConnectionError:
-					time.sleep(1)
+					failedcounter += 1
+					time.sleep(0.1)
 
 			if not (new_data.status_code is requests.codes.ok):
-				#print('https://instagram.com/{target}/?__a=1&max_id={id_next_page}'.format(target=target, id_next_page=id_next_page), new_data.status_code)
 				break
 			new_json = new_data.json()
 			has_next_page = new_json['user']['media']['page_info']['has_next_page']
@@ -77,6 +91,9 @@ class InstagramCrawler(CrawlerProto):
 				elif post_date < since:
 					break
 				postList.append(post)
+
+		#print("Query #" + str(querycounter) + " had " + str(requestcounter) + " requests.")
+		#print(str(requestcounter), str(failedcounter))
 
 		return [query_data, followerCount, postList]
 

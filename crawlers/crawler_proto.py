@@ -68,10 +68,11 @@ class CrawlerProto(object):
 		with open(profiles_file_name, 'r') as csvfile: 
 			reader = csv.reader(csvfile, delimiter=',', quotechar = '|')
 			for row in reader:
-				artistName = row[0]
-				target = row[1]
-				startDateTime = row[2]
-				endDateTime = row[3]
+				genres = row[0]
+				artistName = row[1]
+				target = row[2]
+				startDateTime = row[3]
+				endDateTime = row[4]
 				self.profiles[target] = [artistName, target, startDateTime, endDateTime]
 
 	def save(self, data):
