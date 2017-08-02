@@ -11,14 +11,16 @@ class InstagramCrawler(CrawlerProto):
 
 	def __init__(self, results_directory):
 		self.results_directory = results_directory + '/instagram/'
+		self._session = requests.Session()
 
 	def query(self, query_data):
 
 		def getRequests(url):
 			requests_result = None
-			for n in range(5, 0, -1):
+			attempts = 5
+			for n in range(attempts, 0, -1):
 				try:
-					requests_result = requests.get(url, stream=True)
+					requests_result = self._session.get(url)
 					break
 				except requests.exceptions.ConnectionError:
 					print('Request failed... will try {n} more time(s).'.format(n=n))
