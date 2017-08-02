@@ -27,17 +27,22 @@ class FacebookCrawler(CrawlerProto):
 		try:
 			feed_list = self._getFeedIds(self._getRequests(feeds_url), [])
 		except:
-			print("No posts in specified range for "+target+". Please expand the time range to allow for more posts")
+			print("No feed IDs in specified range for "+target+". Please expand the time range to allow for more posts")
 
-		#feed_list = [str(i) for i in feed_list] 	    
 
 		#Get message, comments and reactions from feed.
-		#target_pool = pp.ProcessPool(4)
-		#postList = target_pool.map(self._getFeed, feed_list)
-		postList = [self._getFeed(item) for item in feed_list]
+		postList = []
+		try:
+			postList = [self._getFeed(item) for item in feed_list]
+		except:
+			print("Posts for "+target+" could not be read.")
 
 		followerCount_url = 'https://graph.facebook.com/'+target+'/?fields=fan_count&'+self._getToken()
-		followerCount = self._getFollowerCount(self._getRequests(followerCount_url))
+		followerCount = None
+		try:
+			followerCount = self._getFollowerCount(self._getRequests(followerCount_url))
+		except:
+			print("Follower count for "+target+" could not be read.")
 
 		return [query_data, followerCount, postList]
 
@@ -64,9 +69,18 @@ class FacebookCrawler(CrawlerProto):
 		return self._token
 
 	def _getRequests(self, url):
-
-		requests_result = requests.get(url, headers={'Connection':'close'}).json()
-		time.sleep(0.01)
+		requests_result = []
+		for n in range(0, 1):
+			try:
+				requests_result = requests.get(url, timeout=6, headers={'Connection':'close'}).json()
+				break
+			except requests.exceptions.RequestException as e:
+				#print('\t excepted url='+url)
+				print(e)
+				time.sleep(1)
+				continue
+		if requests_result is None:
+			raise TimeoutError
 		return requests_result
 
 	def _getFeedIds(self, feeds, feed_list):

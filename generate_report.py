@@ -25,9 +25,8 @@ def main():
 	nposts = []
 	engagements = []
 
-	#genrebuckets = ['URBAN', 'ADULT CONTEMP', 'ROCK', 'POP']
-	genrebuckets = ['URBAN']
-	sizebuckets = ['0-10K', '10K-100K', '100K-250K', '250K-500K', '500K-2M', '2M+']
+	genrebuckets = ['URBAN', 'ADULT CONTEMP', 'ROCK', 'POP']
+	sizebuckets = ['0-10K', '10K-100K', '100K-250K', '250K-500K', '500K-2M', '2M+', 'None']
 	lowerlimits = [0, 10000, 100000, 250000, 500000, 2000000]
 
 	npostslists = {}
@@ -51,10 +50,26 @@ def main():
 			data = json.load(data_file)
 			sizes.append(data['Follower_Count'])
 
-			sizebucket = sizebuckets[len(sizebuckets) - 1]
+			sizebucket = None
+			if data['Follower_Count'] is None:
+				sizebucket = sizebuckets[6]
+			else:
+				for ll in lowerlimits:
+					if data['Follower_Count'] < ll:
+						sizebucket = sizebuckets[lowerlimits.index(ll) - 1]
+						break
+				if sizebucket is None:
+					sizebucket = sizebuckets[5]
+			#print(data['Follower_Count'], sizebucket)
+
 			for ll in lowerlimits:
+				if data['Follower_Count'] is None: #
+					sizebucket = sizebuckets[5] #
+					break #
 				if data['Follower_Count'] < ll:
 					sizebucket = sizebuckets[lowerlimits.index(ll) - 1]
+					print(data['Follower_Count'], sizebucket)
+					break
 
 			nposts.append(len(data['Posts']))
 			postengagements = []
@@ -70,6 +85,7 @@ def main():
 				engagements.append(engagementratio)
 				for genre in genrelist.split('/'):
 					if genre in genrebuckets:
+						#print(name, genre, sizebucket)
 						engagementslists[genre][sizebucket].append(engagementratio)
 			else:
 				engagements.append(None)
@@ -77,6 +93,11 @@ def main():
 			for genre in genrelist.split('/'):
 				if genre in genrebuckets:
 					npostslists[genre][sizebucket].append(len(data['Posts']))
+			#print(name, len(data['Posts']))
+			#print(name, len(postengagements))
+
+	#print(npostslists)
+	#print(engagementslists)
 
 	for genrebucket in genrebuckets:
 		for sizebucket in sizebuckets:
@@ -89,6 +110,9 @@ def main():
 				avgengagements[genrebucket][sizebucket] = sum(engagementslists[genrebucket][sizebucket])/float(len(engagementslists[genrebucket][sizebucket]))
 			else:
 				avgengagements[genrebucket][sizebucket] = 0
+
+			#print(len(npostslists[genrebucket][sizebucket]), len(engagementslists[genrebucket][sizebucket]))
+
 
 	with open(args.results, 'wb') as logfile:
 		wr = csv.writer(logfile)
