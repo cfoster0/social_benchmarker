@@ -13,6 +13,55 @@ class InstagramCrawler(CrawlerProto):
 		self.results_directory = results_directory + '/instagram/'
 
 	def query(self, query_data):
+
+		def getRequests(url):
+			requests_result = None
+			for n in range(5, 0, -1):
+				try:
+					requests_result = requests.get(url, stream=True)
+					break
+				except requests.exceptions.ConnectionError:
+					print('Request failed... will try {n} more time(s).'.format(n=n))
+					time.sleep(4)
+			if (requests_result is None) or (requests_result.status_code is not requests.codes.ok):
+				raise ValueError('Requests to {url} were not successful.'.format(url=url))
+			return requests_result
+
+		def getFollowers(profile):
+			return profile['user']['followed_by']['count']
+
+		def getPosts(profile):
+			return profile['user']['media']['nodes']
+
+		def getSelectPosts(profile, start, end):
+			post_list = []
+			for post in getPosts(profile):
+				post_date = datetime.fromtimestamp(post['date'])
+				if post_date > until:
+					continue
+				elif post_date < since:
+					break
+				post_list.append(parsePost(post))
+			return post_list
+
+		def getNextPage(profile):
+			if profile['user']['media']['page_info']['has_next_page']:
+				return profile['user']['media']['page_info']['end_cursor']
+			else:
+				return None
+
+		def parsePost(post):
+			post_data = {}
+			post_data['id'] = post['code']
+			if 'caption' in post:
+				post_data['caption'] = post['caption']
+			else:
+				post_data['caption'] = ''
+			post_data['is_video'] = post['is_video']
+			post_data['likes'] = post['likes']['count']
+			post_data['comments'] = post['comments']['count']
+			return post_data
+
 		"""
 
 		Args:
@@ -25,59 +74,28 @@ class InstagramCrawler(CrawlerProto):
 		since = datetime.strptime(query_data[2], '%y-%m-%d %H:%M:%S')
 		until = datetime.strptime(query_data[3], '%y-%m-%d %H:%M:%S')
 
-		while True:
-			try:
-				profile_data = requests.get('https://instagram.com/{target}/?__a=1'.format(target=target), stream=True)
-				break
-			except requests.exceptions.ConnectionError:
-				time.sleep(0.1)
-
-		if not (profile_data.status_code is requests.codes.ok):
-			raise ValueError('Profile {target} was not found on Instagram.'.format(target=target))
+		profile_data = getRequests('https://instagram.com/{target}/?__a=1'.format(target=target))
 		profile_json = profile_data.json()
 
 		if profile_json['user']['is_private']:
 			raise ValueError("{target} is a private user, whose posts cannot be read.".format(target=target))
 
-		followerCount = profile_json['user']['followed_by']['count']
-
+		followerCount = getFollowers(profile_json)
 		postList = []
+		postList.extend(getSelectPosts(profile_json, since, until))
 
-		for post in profile_json['user']['media']['nodes']:
-			post_date = datetime.fromtimestamp(post['date'])
-			if post_date > until:
-				continue
-			elif post_date < since:
-				break
-			postList.append(post)
-
-		has_next_page = profile_json['user']['media']['page_info']['has_next_page']
-		id_next_page = profile_json['user']['media']['page_info']['end_cursor']
+		next_page = getNextPage(profile_json)
 
 		while True:
-			while True:
-				try:
-					new_data = requests.get('https://instagram.com/{target}/?__a=1&max_id={id_next_page}'.format(target=target, id_next_page=id_next_page), stream=True)
-					break
-				except requests.exceptions.ConnectionError:
-					time.sleep(0.1)
-
-			if not (new_data.status_code is requests.codes.ok):
+			if next_page is None:
 				break
+
+			new_data = getRequests('https://instagram.com/{target}/?__a=1&max_id={id_next_page}'.format(target=target, id_next_page=next_page))
 			new_json = new_data.json()
-			has_next_page = new_json['user']['media']['page_info']['has_next_page']
-			id_next_page = new_json['user']['media']['page_info']['end_cursor']
 
-			if not has_next_page:
-				break
+			postList.extend(getSelectPosts(new_json, since, until))
 
-			for post in new_json['user']['media']['nodes']:
-				post_date = datetime.fromtimestamp(post['date'])
-				if post_date > until:
-					continue
-				elif post_date < since:
-					break
-				postList.append(post)
+			next_page = getNextPage(new_json)
 
 		return [query_data, followerCount, postList]
 
