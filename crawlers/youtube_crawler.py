@@ -2,60 +2,15 @@ import requests, os, time, json, io, warnings
 import argparse, sys
 from datetime import datetime
 
-class YoutubeCrawler(CrawlerProto):
+from crawler_proto import CrawlerProto, ProfileData
+
+class YouTubeCrawler(CrawlerProto):
 
     def __init__(self, results_directory):
         self.results_directory = results_directory + '/youtube/'
 
     def query(self, query_data):
-        """
 
-        Args:
-            target: Username to be queried
-        Returns:
-            Raw data returned by the crawl of a profile.
-
-        """
-        target = query_data[1]
-        since = query_data[2]
-        until = query_data[3]
-
-        channel_name = target
-        channel_id = getChannelID(channel_name)
-
-        playlist_id = getPlaylistID(channel_name)
-        statistics = getBasicInfo(channel_id)
-
-        viewCount = statistics['viewCount']
-        subscriberCount = statistics['subscriberCount']
-        videoCount = statistics['videoCount']
-        totalLikes = 0
-        totalDislikes = 0
-        totalComments = 0
-        totalfavorites = 0
-
-        videoCount = int(videoCount)
-        if videoCount > 50:
-            videoCount = 50
-
-        videoList = getVideoList(playlist_id, videoCount)
-
-        vidStats = getVidStats(videoList)
-
-        data = {
-            'subscriberCount' : subscriberCount,
-            'viewCount' :  viewCount,
-            'likesCount' : vidStats['totalLikes'],
-            'dislikesCount' : vidStats['totalDislikes'],
-            'commentCount' : vidStats['totalComments'],
-            'favoriteCount' : vidStats['totalfavorites'],
-            'videoCount' : videoCount
-        }
-
-        return [query_data, data['subscriberCount'], videoList]
-
-
-        ##########################################################################################################
         def getRequests(url):
 
             #url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=wheelockcollege&type=channel&key=AIzaSyAR74ZyOIdYEJ0PoflSDUWaq4ZItxFh9_Y' - use this to get channel id
@@ -64,9 +19,6 @@ class YoutubeCrawler(CrawlerProto):
             time.sleep(0.01)
             return(requests_result)
 
-        # ##########################################################################################################
-
-
         def getChannelID(channel_name):
             url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=' + channel_name + '?&type=channel&key=' + self.get_secret()
             url2 ='https://www.googleapis.com/youtube/v3/channels?key='+self.get_secret()+'&forUsername='+channel_name+'&part=id'
@@ -74,10 +26,6 @@ class YoutubeCrawler(CrawlerProto):
             val = getRequests(url)
             #print("VAL", val)
             return (val['items'][0]['id']['channelId'])
-
-
-        # ##########################################################################################################
-
 
         def getPlaylistID(channel_name):
             url = 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername='+ channel_name +'&key=' + self.get_secret()
@@ -89,19 +37,10 @@ class YoutubeCrawler(CrawlerProto):
             #print(val['items'][0])
             return val['items'][0]['contentDetails']['relatedPlaylists']['uploads']
 
-
-        # ##########################################################################################################
-
-
-
         def getBasicInfo(channel_id):
             url ='https://www.googleapis.com/youtube/v3/channels?id=' + channel_id +'&key='+self.get_secret()+'&part=statistics'
             val = getRequests(url)
             return val ['items'][0]['statistics']
-
-
-        # ##########################################################################################################
-
 
         def getVideoList(playlist_id, videoCount):
             #url = 'https://www.googleapis.com/youtube/v3/search?key='+self.get_secret()+'&channelId='+playlist_id+'&part=snippet'
@@ -113,42 +52,70 @@ class YoutubeCrawler(CrawlerProto):
             videoList = []
             #print(videoCount-1)
 
-            print(val)
+            #print(val)
             for n in range(0, videoCount - 1):
-                #print(n)
+                #print(val[n])
                 videoList.append(val[n]['contentDetails']['videoId'])
+                #print(query_data[1], val[n]['contentDetails']['videoPublishedAt'])
 
             return videoList
 
-        # ##########################################################################################################
-
-
         def getVidStats(videoList):
-            totalLikes = 0
-            totalDislikes = 0
-            totalComments = 0
-            totalfavorites = 0
+            post_list = []
 
             for vidId in videoList:
+                post_data = {}
+
                 url = 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vidId + '&key=' + self.get_secret()
                 val = getRequests(url)
+                post_data['id'] = val['items'][0]['id']
                 val = val['items'][0]['statistics']
-                totalLikes += int(val['likeCount'])
-                totalDislikes += int(val['dislikeCount'])
-                totalComments += int(val['commentCount'])
-                totalfavorites += int(val['favoriteCount'])
+                post_data['views'] = int(val['viewCount'])
+                post_data['likes'] = int(val['likeCount'])
+                post_data['dislikes'] = int(val['dislikeCount'])
+                post_data['comments'] = int(val['commentCount'])
+                post_data['favorites']= int(val['favoriteCount'])
 
-            vidStats = {
-                'totalLikes' : totalLikes,
-                'totalDislikes' : totalDislikes,
-                'totalComments' : totalComments,
-                'totalfavorites' : totalfavorites
-            }
+                post_list.append(post_data)
 
-            return vidStats
+            return post_list
 
-        # ##########################################################################################################
+        """
 
+        Args:
+            target: Username to be queried
+        Returns:
+            Raw data returned by the crawl of a profile.
+
+        """
+
+        target = query_data[1]
+        since = query_data[2]
+        until = query_data[3]
+
+        channel_name = target
+        channel_id = getChannelID(channel_name)
+
+        playlist_id = getPlaylistID(channel_name)
+        statistics = getBasicInfo(channel_id)
+
+        viewCount = int(statistics['viewCount'])
+        subscriberCount = int(statistics['subscriberCount'])
+        videoCount = int(statistics['videoCount'])
+        totalLikes = 0
+        totalDislikes = 0
+        totalComments = 0
+        totalfavorites = 0
+
+        videoCount = int(videoCount)
+        if videoCount > 50:
+            videoCount = 50
+
+        videoList = getVideoList(playlist_id, videoCount)
+
+        post_list = getVidStats(videoList)
+
+        return [query_data, subscriberCount, post_list]
 
 
     def format(self, raw_data):
