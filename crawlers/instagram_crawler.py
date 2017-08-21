@@ -26,7 +26,7 @@ class InstagramCrawler(CrawlerProto):
 					print('Request failed... will try {n} more time(s).'.format(n=n))
 					time.sleep(4)
 			if (requests_result is None) or (requests_result.status_code is not requests.codes.ok):
-				raise ValueError('Requests to {url} were not successful.'.format(url=url))
+				raise ValueError('Profile query failed, as requests to {url} were not successful.'.format(url=url))
 			return requests_result
 
 		def getFollowers(profile):
@@ -76,30 +76,35 @@ class InstagramCrawler(CrawlerProto):
 		since = datetime.strptime(query_data[2], '%y-%m-%d %H:%M:%S')
 		until = datetime.strptime(query_data[3], '%y-%m-%d %H:%M:%S')
 
-		profile_data = getRequests('https://instagram.com/{target}/?__a=1'.format(target=target))
-		profile_json = profile_data.json()
+		try:
+			profile_data = getRequests('https://instagram.com/{target}/?__a=1'.format(target=target))
 
-		if profile_json['user']['is_private']:
-			raise ValueError("{target} is a private user, whose posts cannot be read.".format(target=target))
+			profile_json = profile_data.json()
 
-		followerCount = getFollowers(profile_json)
-		postList = []
-		postList.extend(getSelectPosts(profile_json, since, until))
+			if profile_json['user']['is_private']:
+				raise ValueError("{target} is a private user, whose posts cannot be read.".format(target=target))
 
-		next_page = getNextPage(profile_json)
+			followerCount = getFollowers(profile_json)
+			postList = []
+			postList.extend(getSelectPosts(profile_json, since, until))
 
-		while True:
-			if next_page is None:
-				break
+			next_page = getNextPage(profile_json)
 
-			new_data = getRequests('https://instagram.com/{target}/?__a=1&max_id={id_next_page}'.format(target=target, id_next_page=next_page))
-			new_json = new_data.json()
+			while True:
+				if next_page is None:
+					break
 
-			postList.extend(getSelectPosts(new_json, since, until))
+				new_data = getRequests('https://instagram.com/{target}/?__a=1&max_id={id_next_page}'.format(target=target, id_next_page=next_page))
+				new_json = new_data.json()
 
-			next_page = getNextPage(new_json)
+				postList.extend(getSelectPosts(new_json, since, until))
 
-		return [query_data, followerCount, postList]
+				next_page = getNextPage(new_json)
+
+			return [query_data, followerCount, postList]
+
+		except ValueError:
+			return [query_data, 0, []]
 
 
 	def format(self, raw_data):

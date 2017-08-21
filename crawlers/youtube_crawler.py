@@ -17,7 +17,7 @@ class YouTubeCrawler(CrawlerProto):
 
             requests_result = requests.get(url, headers={'Connection':'close'}).json()
             time.sleep(0.01)
-            return(requests_result)
+            return requests_result
 
         def getChannelID(channel_name):
             url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=' + channel_name + '?&type=channel&key=' + self.get_secret()
@@ -25,24 +25,30 @@ class YouTubeCrawler(CrawlerProto):
             #print('LL', url2)
             val = getRequests(url)
             #print("VAL", val)
-            return (val['items'][0]['id']['channelId'])
+            result = None
+            if val['items']:
+                result = val['items'][0]['id']['channelId']
+            return result
 
         def getPlaylistID(channel_name):
             url = 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername='+ channel_name +'&key=' + self.get_secret()
-           # print(url)
+            # print(url)
             val = getRequests(url)
             #print(val['items'])
             #print(val['items'][0]['contentDetails']['relatedPlaylists']['uploads'])
             #print('CHECK', len(val['items'][0]['contentDetails']['relatedPlaylists']['uploads']))
             #print(val['items'][0])
-            return val['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+            result = None
+            if val['items']:
+                result = val['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+            return result
 
         def getBasicInfo(channel_id):
             url ='https://www.googleapis.com/youtube/v3/channels?id=' + channel_id +'&key='+self.get_secret()+'&part=statistics'
             val = getRequests(url)
             return val ['items'][0]['statistics']
 
-        def getVideoList(playlist_id, videoCount):
+        def getVideoList(playlist_id):
             #url = 'https://www.googleapis.com/youtube/v3/search?key='+self.get_secret()+'&channelId='+playlist_id+'&part=snippet'
             # 50 video limit - order according to date
             url = 'https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&maxResults=50&playlistId='+playlist_id+'&key='+self.get_secret() +'&order=date'
@@ -51,9 +57,9 @@ class YouTubeCrawler(CrawlerProto):
             val = val['items']
             videoList = []
             #print(videoCount-1)
+            videoCount = len(val)
 
-            #print(val)
-            for n in range(0, videoCount - 1):
+            for n in range(videoCount):
                 #print(val[n])
                 videoList.append(val[n]['contentDetails']['videoId'])
                 #print(query_data[1], val[n]['contentDetails']['videoPublishedAt'])
@@ -70,11 +76,23 @@ class YouTubeCrawler(CrawlerProto):
                 val = getRequests(url)
                 post_data['id'] = val['items'][0]['id']
                 val = val['items'][0]['statistics']
-                post_data['views'] = int(val['viewCount'])
-                post_data['likes'] = int(val['likeCount'])
-                post_data['dislikes'] = int(val['dislikeCount'])
-                post_data['comments'] = int(val['commentCount'])
-                post_data['favorites']= int(val['favoriteCount'])
+
+                post_data['views'] = 0
+                post_data['likes'] = 0
+                post_data['dislikes'] = 0
+                post_data['comments'] = 0
+                post_data['favorites'] = 0
+
+                if 'viewCount' in val:
+                    post_data['views'] = int(val['viewCount'])
+                if 'likeCount' in val:
+                    post_data['likes'] = int(val['likeCount'])
+                if 'dislikeCount' in val:
+                    post_data['dislikes'] = int(val['dislikeCount'])
+                if 'commentCount' in val:
+                    post_data['comments'] = int(val['commentCount'])
+                if 'favoriteCount' in val:
+                    post_data['favorites'] = int(val['favoriteCount'])            
 
                 post_list.append(post_data)
 
@@ -95,8 +113,11 @@ class YouTubeCrawler(CrawlerProto):
 
         channel_name = target
         channel_id = getChannelID(channel_name)
-
         playlist_id = getPlaylistID(channel_name)
+        if channel_id is None or playlist_id is None:
+            print(channel_name)
+            return [query_data, 0, []]
+
         statistics = getBasicInfo(channel_id)
 
         viewCount = int(statistics['viewCount'])
@@ -107,11 +128,7 @@ class YouTubeCrawler(CrawlerProto):
         totalComments = 0
         totalfavorites = 0
 
-        videoCount = int(videoCount)
-        if videoCount > 50:
-            videoCount = 50
-
-        videoList = getVideoList(playlist_id, videoCount)
+        videoList = getVideoList(playlist_id)
 
         post_list = getVidStats(videoList)
 
