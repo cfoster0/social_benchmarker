@@ -9,19 +9,19 @@ class FacebookCrawler(CrawlerProto):
 		self.results_directory = results_directory + '/facebook/'
 
 	def query(self, query_data):
+		
 		"""
-
-		Args:
-			target: Username to be queried
+		Arguments:
+			query_data: Metadata relating to the profile to be queried.
 		Returns:
-			Raw data returned by the crawl of a profile.
-
+			List of raw data returned by the crawl of a profile.
 		"""
+
 		target = query_data[1]
 		since = query_data[2]
 		until = query_data[3]
 
-		#Get list of feed id from target.
+		# Get list of feed id from target.
 		feeds_url = 'https://graph.facebook.com/v2.7/' + target + '/?fields=feed.limit(100).since(' + since + ').until(' + until + '){id}&' + self._getToken()
 		feed_list = []
 		try:
@@ -30,7 +30,7 @@ class FacebookCrawler(CrawlerProto):
 			print("No feed IDs in specified range for "+target+". Please expand the time range to allow for more posts")
 
 
-		#Get message, comments and reactions from feed.
+		# Get message, comments and reactions from feed.
 		postList = []
 		try:
 			postList = [self._getFeed(item) for item in feed_list]
@@ -48,14 +48,14 @@ class FacebookCrawler(CrawlerProto):
 
 
 	def format(self, raw_data):
+		
 		"""
-
-		Args:
-			raw_data: Raw data returned by the crawl of a profile.
+		Arguments:
+			raw_data: Raw data list returned by the crawl of a profile (from the query function).
 		Returns:
 			ProfileData tuple of the formatted profile data.
-
 		"""
+
 		target = raw_data[0]
 		followerCount = raw_data[1]
 		postList = raw_data[2]
@@ -63,19 +63,39 @@ class FacebookCrawler(CrawlerProto):
 		return ProfileData(Artist_Name=target[0], Artist_Login=target[1], File_create_datetime=str(datetime.now()), Follower_Count=followerCount, Posts=postList)
 
 	def set_token(self, app_id, app_secret):
+		
+		"""
+		Arguments:
+			app_id: The ID of the Facebook app that was registered for API access.
+			app_secret: The application secret of the Facebook app that was registered for API access.
+		"""
+
 		self._token = 'access_token=' + app_id + '|' + app_secret
 
 	def _getToken(self):
+		
+		"""
+		Returns:
+			The application token used to access API resources.
+		"""
+
 		return self._token
 
 	def _getRequests(self, url):
+		
+		"""
+		Arguments:
+			url: The URL of the API request to be made, including the token.
+		Returns:
+			requests_result: The result of the (presumably successful) HTTP request that was made.
+		"""
+
 		requests_result = []
 		for n in range(0, 1):
 			try:
 				requests_result = requests.get(url, timeout=6, headers={'Connection':'close'}).json()
 				break
 			except requests.exceptions.RequestException as e:
-				#print('\t excepted url='+url)
 				print(e)
 				time.sleep(1)
 				continue
@@ -84,6 +104,14 @@ class FacebookCrawler(CrawlerProto):
 		return requests_result
 
 	def _getFeedIds(self, feeds, feed_list):
+		
+		"""
+		Arguments:
+			feeds: The result of calling the API for feed data.
+			feed_list: The current list of feed IDs.
+		Returns:
+			feed_list: The list of feed IDs, after adding the API results.
+		"""
 
 		feeds = feeds['feed'] if 'feed' in feeds else feeds
 
@@ -96,6 +124,14 @@ class FacebookCrawler(CrawlerProto):
 		return feed_list
 
 	def _getComments(self, comments, comments_count):
+
+		"""
+		Arguments:
+			comments: The result of calling the API for comment data.
+			comments_count: The current count of comments.
+		Returns:
+			comments_count: The count of comments, after adding the API results.
+		"""
 
 		# If comments exist.
 		comments = comments['comments'] if 'comments' in comments else comments
@@ -122,6 +158,14 @@ class FacebookCrawler(CrawlerProto):
 		return comments_count
 
 	def _getFollowerCount(self, followerCount_req):
+
+		"""
+		Arguments:
+			followerCount_req: The result of calling the API for follower count data.
+		Returns:
+			Either the follower count or a None object, if the count cannot be accessed.
+		"""
+
 		followerCount_req = followerCount_req['followerCount_req'] if 'followerCount_req' in followerCount_req else followerCount_req
 		if 'fan_count' in followerCount_req:
 			return followerCount_req['fan_count']
@@ -129,10 +173,29 @@ class FacebookCrawler(CrawlerProto):
 			return None
 
 	def _getFeedType(self, feedType_req):
+
+		"""
+		Arguments:
+			feedType_req: The result of calling the API for feed count data.
+		Returns:
+			Either the feed count or a None object, if the count cannot be accessed.
+		"""
+
 			feedType_req = feedType_req['feedType_req'] if 'feedType_req' in feedType_req else feedType_req
-			return feedType_req['type']
+			if 'type' in feedType_req:
+				return feedType_req['type']
+			else:
+				return None
 
 	def _getMessage(self, message_req):
+
+		"""
+		Arguments:
+			message_req: The result of calling the API for message data.
+		Returns:
+			Either the message or a None object, if the message cannot be accessed.
+		"""
+
 			message_req = message_req['message_req'] if 'message_req' in message_req else message_req
 			if 'message' in message_req:
 				return message_req['message'] 
@@ -140,6 +203,14 @@ class FacebookCrawler(CrawlerProto):
 				return None
 
 	def _getOptimizedReactions(self, opt_reactions):
+
+		"""
+		Arguments:
+			opt_reactions: The result of calling the API for reactions data.
+		Returns:
+			reactions_count_dict1: A formatted dictionary of the reactions to a post.
+		"""
+
 			opt_reactions = opt_reactions['opt_reactions'] if 'opt_reactions' in opt_reactions else opt_reactions
 			like = ((opt_reactions['LIKE'])['summary'])['total_count']
 			love = ((opt_reactions['LOVE'])['summary'])['total_count']
@@ -161,6 +232,14 @@ class FacebookCrawler(CrawlerProto):
 			return reactions_count_dict1
 
 	def _getShares(self, share_url):
+
+		"""
+		Arguments:
+			share_url: The result of calling the API for share count.
+		Returns:
+			Either the share count or a None object, if the count cannot be accessed.
+		"""
+
 		share_url = share_url['share_url'] if 'share_url' in share_url else share_url
 		if 'shares' in share_url:
 			return (share_url['shares'])['count']
@@ -168,6 +247,13 @@ class FacebookCrawler(CrawlerProto):
 			return 0 
 
 	def _getFeed(self, feed_id):
+
+		"""
+		Arguments:
+			feed_id: The ID of the feed whose data should be accessed.
+		Returns:
+			post: A dictionary with all of the formatted data for the requested post.
+		"""
 
 		feed_url = 'https://graph.facebook.com/v2.7/' + feed_id
 		accessable_feed_url = feed_url + '?' + self._getToken()

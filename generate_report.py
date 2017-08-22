@@ -17,7 +17,7 @@ def main():
 	parser.add_argument("inputs", help="Set the .csv file from which inputs should be read.")
 	parser.add_argument("data", help="Set the directory profile data can be read from.")
 	parser.add_argument("results", help="Set the .csv file where the results should be stored.")
-	parser.add_argument("platform", type=str, choices=['facebook', 'instagram', 'youtube'])
+	parser.add_argument("platform", type=str, choices=['facebook', 'instagram', 'youtube'], help="Set the platform the data is sourced from.")
 
 	args = parser.parse_args()
 
@@ -34,6 +34,10 @@ def read_profile_data(fname, dirname, platform):
 		fname: The name of a file with profile data, extracted as a JSON object through our youtube_crawler.py script.
 		dirname: The name of the directory profile data can be read from.
 		platform: The name of the platform the data comes from.
+	Returns:
+		genres: List of genre strings, one per artist
+		names: List of artist name strings, one per artist
+		usernames: List of artist username strings, one per artist
 	"""
 
 	with open(fname, 'r') as csvfile:
@@ -62,6 +66,10 @@ def post_stats(post, size, platform):
 		post: A JSON object of the post to return engagement stats for.
 		size: Size of the profile's following.
 		platform: The name of the platform the data comes from.
+	Returns:
+		engagements: The count of the total engagements a post achieved.
+		ratio: The engagement ratio on the post, calculated according to the data available
+			for that platform.
 	"""
 
 	if platform == 'facebook':
@@ -90,9 +98,13 @@ def profile_stats(name, dirname, platform):
 		name: The name (as a string) of the artist whose stats should be returned.
 		dirname: The name of the directory profile data can be read from.
 		platform: The name of the platform the data comes from.
+	Returns:
+		size: The artist's follower count.
+		engagement_average: The artist's average per-post engagement.
+		ratio_average: The artist's average per-post engagement ratio.
 	"""
 
-	with open("{cwd}/{dir}/{plat}/{name}.json".format(cwd=os.getcwd(), dir=dirname, plat=platform, name=row[1])) as f:
+	with open("{cwd}/{dir}/{plat}/{name}.json".format(cwd=os.getcwd(), dir=dirname, plat=platform, name=name)) as f:
 		data = json.load(f)
 
 	size = data['Follower_Count']
@@ -132,6 +144,12 @@ def calculate_stats(genres, names, usernames, dirname, platform):
 		usernames: A list of username (i.e. channel name) strings, ordered as the profiles were read in
 		dirname: The name of the directory profile data can be read from.
 		platform: The name of the platform the data comes from.
+	Returns:
+		all_genres: A dictionary mapping genres to lists of the artists within the genre.
+		all_sizes: A dictionary mapping audience sizes to lists of the artists within that bucket.
+		all_engagements: A dictionary mapping artist names to their average per-post engagement.
+		all_ratios: A dictionary mapping artist names to their average engagement ratio.
+		stats: A dictionary mapping genres to sizes to the average engagement and ratio for that subcategory.
 	"""
 
 	all_genres = {}

@@ -1,7 +1,5 @@
 import requests, sys, os, time, json, warnings, argparse, sys
 
-import pytz
-
 from datetime import datetime
 import pathos.pools as pp 
 from crawler_proto import CrawlerProto, ProfileData
@@ -15,7 +13,23 @@ class InstagramCrawler(CrawlerProto):
 
 	def query(self, query_data):
 
+		"""
+		Arguments:
+			query_data: Metadata relating to the profile to be queried.
+		Returns:
+			List of raw data returned by the crawl of a profile.
+		"""
+
 		def getRequests(url):
+
+			"""
+			Arguments:
+				url: The URL of the API request to be made, including the token.
+			Returns:
+				requests_result: The result of the (presumably successful)
+					HTTP request that was made.
+			"""
+			
 			requests_result = None
 			attempts = 5
 			for n in range(attempts, 0, -1):
@@ -30,12 +44,39 @@ class InstagramCrawler(CrawlerProto):
 			return requests_result
 
 		def getFollowers(profile):
+
+			"""
+			Arguments:
+				profile: The result of calling the API for a profile.
+			Returns:
+				The follower count for that profile.
+			"""
+
 			return profile['user']['followed_by']['count']
 
 		def getPosts(profile):
+
+			"""
+			Arguments:
+				profile: The result of calling the API for a profile.
+			Returns:
+				The list of posts for that profile.
+			"""
+
 			return profile['user']['media']['nodes']
 
 		def getSelectPosts(profile, start, end):
+
+			"""
+			Arguments:
+				profile: The result of calling the API for a profile.
+				start: The datetime of the start of the period of interest.
+				end: The datetime of the end of the period of interest.
+			Returns:
+				post_list: The posts from a profile within that selected
+					time frame.
+			"""
+
 			post_list = []
 			for post in getPosts(profile):
 				post_date = datetime.fromtimestamp(post['date'])
@@ -47,12 +88,30 @@ class InstagramCrawler(CrawlerProto):
 			return post_list
 
 		def getNextPage(profile):
+
+			"""
+			Arguments:
+				profile: The result of calling the API for a profile.
+			Returns:
+				Either the next page of profile data or a None object,
+					if the data cannot be accessed.
+			"""
+
 			if profile['user']['media']['page_info']['has_next_page']:
 				return profile['user']['media']['page_info']['end_cursor']
 			else:
 				return None
 
 		def parsePost(post):
+
+			"""
+			Arguments:
+				post: The result of calling the API for a post.
+			Returns:
+				post_data: A formatted dictionary of the relevant
+					data on a post.
+			"""
+
 			post_data = {}
 			post_data['id'] = post['code']
 			if 'caption' in post:
@@ -64,14 +123,8 @@ class InstagramCrawler(CrawlerProto):
 			post_data['comments'] = post['comments']['count']
 			return post_data
 
-		"""
+		#####
 
-		Args:
-			target: Username to be queried
-		Returns:
-			Raw data returned by the crawl of a profile.
-
-		"""
 		target = query_data[1]
 		since = datetime.strptime(query_data[2], '%y-%m-%d %H:%M:%S')
 		until = datetime.strptime(query_data[3], '%y-%m-%d %H:%M:%S')
@@ -108,14 +161,14 @@ class InstagramCrawler(CrawlerProto):
 
 
 	def format(self, raw_data):
+		
 		"""
-
 		Args:
 			raw_data: Raw data returned by the crawl of a profile.
 		Returns:
 			ProfileData tuple of the formatted profile data.
-
 		"""
+
 		target = raw_data[0]
 		followerCount = raw_data[1]
 		postList = raw_data[2]

@@ -11,62 +11,108 @@ class YouTubeCrawler(CrawlerProto):
 
     def query(self, query_data):
 
+        """
+        Arguments:
+            query_data: Metadata relating to the profile to be queried.
+        Returns:
+            List of raw data returned by the crawl of a profile.
+        """
+
         def getRequests(url):
 
-            #url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=wheelockcollege&type=channel&key=AIzaSyAR74ZyOIdYEJ0PoflSDUWaq4ZItxFh9_Y' - use this to get channel id
+            """
+            Arguments:
+                url: The URL of the API request to be made, including the token.
+            Returns:
+                requests_result: The result of the (presumably successful)
+                    HTTP request that was made.
+            """
 
             requests_result = requests.get(url, headers={'Connection':'close'}).json()
             time.sleep(0.01)
             return requests_result
 
         def getChannelID(channel_name):
+
+            """
+            Arguments:
+                channel_name: The name of the channel to be queried.
+            Returns:
+                result: The result of querying the API for channel IDs
+                    matching the name.
+            """
+
             url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&q=' + channel_name + '?&type=channel&key=' + self.get_secret()
             url2 ='https://www.googleapis.com/youtube/v3/channels?key='+self.get_secret()+'&forUsername='+channel_name+'&part=id'
-            #print('LL', url2)
             val = getRequests(url)
-            #print("VAL", val)
             result = None
             if val['items']:
                 result = val['items'][0]['id']['channelId']
             return result
 
         def getPlaylistID(channel_name):
+
+            """
+            Arguments:
+                channel_name: The name of the channel to be queried.
+            Returns:
+                result: The result of querying the API for playlist
+                    IDs matching the name.
+            """
+
             url = 'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername='+ channel_name +'&key=' + self.get_secret()
-            # print(url)
             val = getRequests(url)
-            #print(val['items'])
-            #print(val['items'][0]['contentDetails']['relatedPlaylists']['uploads'])
-            #print('CHECK', len(val['items'][0]['contentDetails']['relatedPlaylists']['uploads']))
-            #print(val['items'][0])
             result = None
             if val['items']:
                 result = val['items'][0]['contentDetails']['relatedPlaylists']['uploads']
             return result
 
         def getBasicInfo(channel_id):
+
+            """
+            Arguments:
+                channel_id: The ID of the channel to be queried.
+            Returns:
+                result: The result of querying the API for basic info
+                    about the channel.
+            """
+
             url ='https://www.googleapis.com/youtube/v3/channels?id=' + channel_id +'&key='+self.get_secret()+'&part=statistics'
             val = getRequests(url)
             return val ['items'][0]['statistics']
 
         def getVideoList(playlist_id):
-            #url = 'https://www.googleapis.com/youtube/v3/search?key='+self.get_secret()+'&channelId='+playlist_id+'&part=snippet'
+           
+            """
+            Arguments:
+                playlist_id: The ID of the playlist to be queried.
+            Returns:
+                videoList: The result of querying the API for the
+                    list of videos on the playlist.
+            """
+
             # 50 video limit - order according to date
             url = 'https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&maxResults=50&playlistId='+playlist_id+'&key='+self.get_secret() +'&order=date'
-            #print('URL', url)
             val = getRequests(url)
             val = val['items']
             videoList = []
-            #print(videoCount-1)
             videoCount = len(val)
 
             for n in range(videoCount):
-                #print(val[n])
                 videoList.append(val[n]['contentDetails']['videoId'])
-                #print(query_data[1], val[n]['contentDetails']['videoPublishedAt'])
 
             return videoList
 
         def getVidStats(videoList):
+
+            """
+            Arguments:
+                videoList: A list of the videos to be queried.
+            Returns:
+                post_list: A list of dictionaries containing statistics for
+                    each of the listed videos.
+            """
+
             post_list = []
 
             for vidId in videoList:
@@ -98,14 +144,7 @@ class YouTubeCrawler(CrawlerProto):
 
             return post_list
 
-        """
-
-        Args:
-            target: Username to be queried
-        Returns:
-            Raw data returned by the crawl of a profile.
-
-        """
+        #####
 
         target = query_data[1]
         since = query_data[2]
@@ -136,14 +175,14 @@ class YouTubeCrawler(CrawlerProto):
 
 
     def format(self, raw_data):
+        
         """
-
-        Args:
+        Arguments:
             raw_data: Raw data returned by the crawl of a profile.
         Returns:
             ProfileData tuple of the formatted profile data.
-
         """
+
         target = raw_data[0]
         followerCount = raw_data[1]
         postList = raw_data[2]
@@ -151,7 +190,20 @@ class YouTubeCrawler(CrawlerProto):
         return ProfileData(Artist_Name=target[0], Artist_Login=target[1], File_create_datetime=str(datetime.now()), Follower_Count=followerCount, Posts=postList)
 
     def set_secret(self, app_secret):
+
+        """
+        Arguments:
+            app_secret: The application secret of the YouTube app that
+                was registered for API access.
+        """
+
         self._app_secret = app_secret
 
     def get_secret(self):
+
+        """
+        Returns:
+            The application secret used to access API resources.
+        """
+
         return self._app_secret
