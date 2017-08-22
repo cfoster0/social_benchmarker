@@ -5,11 +5,6 @@ Hello! This project contains tools for generating social media benchmarks for WB
 
 ----------
 
-[TOC]
-
-
-----------
-
 
 Overview
 -------------
@@ -32,11 +27,12 @@ Walkthrough
 #### Creating the spreadsheets
 
 **Each social media platform should have its own spreadsheet**, since artist usernames may differ across platforms. In order for the extraction script to know what data to extract, the spreadsheet for each platform needs to have the following format:
-| Genre(s) | Artist Name | Username | Start Date | End Date |
-| - | - | - | - | - |
-| URBAN/POP | Rihanna | rihanna | `17-01-01 00:00:00`            | `17-12-31 23:59:59`  |
-| ROCK | Prophets of Rage | prophetsofrageofficial | `17-01-01 00:00:00` | `17-12-31 23:59:59`  |
-| ADULT CONTEMP | Quiet Riot | quietriot | `17-01-01 00:00:00`            | `17-12-31 23:59:59`  |
+
+| Genre(s)      | Artist Name      | Username               | Start Date        | End Date          |
+|---------------|------------------|------------------------|-------------------|-------------------|
+| URBAN/POP     | Rihanna          | rihanna                | 17-01-01 00:00:00 | 17-12-31 23:59:59 |
+| ROCK          | Prophets of Rage | prophetsofrageofficial | 17-01-01 00:00:00 | 17-12-31 23:59:59 |
+| ADULT CONTEMP | Quiet Riot       | quietriot              | 17-01-01 00:00:00 | 17-12-31 23:59:59 |
 
 Once this spreadsheet has been created, you will need to export it to a .csv file so it can be easily read later on. 
 	> **FYI:** This conversion will ignore formatting, convert all values into plain text, and separate them by commas and line breaks instead of columns and rows. Excel may warn you of this, but don't worry: we are doing that intentionally.
