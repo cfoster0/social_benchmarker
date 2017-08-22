@@ -8,7 +8,10 @@ from crawler_proto import CrawlerProto, ProfileData
 class InstagramCrawler(CrawlerProto):
 
 	def __init__(self, results_directory):
-		self.results_directory = results_directory + '/instagram/'
+		results_directory = results_directory + '/instagram/'
+        if not os.path.isdir(results_directory):
+            os.mkdir(results_directory)
+		self.results_directory = results_directory
 		self._session = requests.Session()
 
 	def query(self, query_data):

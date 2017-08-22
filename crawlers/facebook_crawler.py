@@ -6,7 +6,10 @@ from crawler_proto import CrawlerProto, ProfileData
 class FacebookCrawler(CrawlerProto):
 
 	def __init__(self, results_directory):
-		self.results_directory = results_directory + '/facebook/'
+		results_directory = results_directory + '/facebook/'
+        if not os.path.isdir(results_directory):
+            os.mkdir(results_directory)
+		self.results_directory = results_directory
 
 	def query(self, query_data):
 		

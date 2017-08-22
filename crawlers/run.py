@@ -6,44 +6,54 @@ from facebook_crawler import FacebookCrawler
 from instagram_crawler import InstagramCrawler
 from youtube_crawler import YouTubeCrawler
 
+facebook_app = None # Fill me in with your Facebook application ID
+facebook_secret = None # Fill me in with your Facebook application secret
+youtube_key = None # Fill me in with your YouTube application key
+
+platforms = ['facebook', 'instagram', 'youtube']
+
 def main():
 
 	# Set crawler target and parameters.
 	parser = argparse.ArgumentParser()
 
+	parser.add_argument("platform", type=str, choices=platforms, help="Set the platform the data is sourced from.")
 	parser.add_argument("inputs", help="Set the .csv file from which inputs should be read.")
 	parser.add_argument("results", help="Set the directory where results should be stored.")
-
-	parser.add_argument("-f", "--facebook", action='store_true', help="If yes, this crawl will collect Facebook data.")
-	parser.add_argument("-i", "--instagram", action='store_true', help="If yes, this crawl will collect Instagram data.")
-	parser.add_argument("-y", "--youtube", action='store_true', help="If yes, this crawl will collect YouTube data.")
 
 	args = parser.parse_args()
 
 	p = mp.Pool(4)
 
-	if args.facebook is True:
+	if args.platform is 'facebook':
+		if facebook_app is None or facebook_secret is None:
+			raise ValueError("Facebook application ID and secret must be provided.")
 		fbc = FacebookCrawler(args.results)
-		fbc.set_token('157949204752963','2aa1ebdf5aa5cb1e190ffdc21b032c99')
+		fbc.set_token(facebook_app, facebook_secret)
 		fbc.set_profiles(args.inputs)
 		fbclist = list(fbc)
 		rawqueries = p.map(fbc.query, fbclist)
 		p.map(fbc.save, rawqueries)
 
-	if args.instagram is True:
+	elif args.platform is 'instagram':
 		igc = InstagramCrawler(args.results)
 		igc.set_profiles(args.inputs)
 		igclist = list(igc)
 		rawqueries = p.map(igc.query, igclist)
 		p.map(igc.save, rawqueries)
 
-	if args.youtube is True:
+	elif args.platform is 'youtube':
+		if youtube_secret is None:
+			raise ValueError("YouTube application secret must be provided.")
 		ytc = YouTubeCrawler(args.results)
-		ytc.set_secret('AIzaSyAR74ZyOIdYEJ0PoflSDUWaq4ZItxFh9_Y')
+		ytc.set_secret(youtube_key)
 		ytc.set_profiles(args.inputs)
 		ytclist = list(ytc)
 		rawqueries = p.map(ytc.query, ytclist)
 		p.map(ytc.save, rawqueries)
+
+	else:
+		raise NotImplementedError("Platform {plat} has not been implemented. The valid platforms are: {platlist}.".format(plat=args.platform, platlist=str(platforms)))
 
 	p.close()
 

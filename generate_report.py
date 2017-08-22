@@ -4,6 +4,8 @@ GENRES = ['URBAN', 'ADULT CONTEMP', 'ROCK', 'POP', 'ELECTRONIC']
 SIZES = ['0-10K', '10K-100K', '100K-250K', '250K-500K', '500K-2M', '2M+']
 LIMITS = [0, 10000, 100000, 250000, 500000, 2000000] # Minimum limit for each size bucket
 
+platforms = ['facebook', 'instagram', 'youtube']
+
 def main():
 
 	"""
@@ -14,10 +16,10 @@ def main():
 
 	parser = argparse.ArgumentParser()
 
+	parser.add_argument("platform", type=str, choices=platforms, help="Set the platform the data is sourced from.")
 	parser.add_argument("inputs", help="Set the .csv file from which inputs should be read.")
 	parser.add_argument("data", help="Set the directory profile data can be read from.")
 	parser.add_argument("results", help="Set the .csv file where the results should be stored.")
-	parser.add_argument("platform", type=str, choices=['facebook', 'instagram', 'youtube'], help="Set the platform the data is sourced from.")
 
 	args = parser.parse_args()
 
