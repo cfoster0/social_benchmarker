@@ -12,11 +12,11 @@ Overview
 
 
 **Before you can run any of the scripts, you will need to have [Python 3.x](https://www.python.org/downloads/), [pip](https://stackoverflow.com/questions/40868345/checking-whether-the-pip-is-installed), and the [requests](https://pypi.python.org/pypi/requests) module installed.**
-> 1. Download this project by clicking on "Clone or Download" or by clicking [here](https://github.com/cfoster0/social_benchmarker/archive/master.zip).
-> 2. Create an Excel or Google Sheets spreadsheet containing metadata for the peer artists you care about and export it to a .csv on your machine.
-> 3. Run the extraction script, **run.py**, to get data from the social media accounts.
-> 4. Wait . . . Los Angeles wasn't built in a day.
-> 5. Run the analysis script, **generate_report.py**, to convert the data into benchmarks.
+1. Download this project by clicking on "Clone or Download" or by clicking [here](https://github.com/cfoster0/social_benchmarker/archive/master.zip).
+2. Create an Excel or Google Sheets spreadsheet containing metadata for the peer artists you care about and export it to a .csv on your machine.
+3. Run the extraction script, **run.py**, to get data from the social media accounts.
+4. Wait . . . Los Angeles wasn't built in a day.
+5. Run the analysis script, **generate_report.py**, to convert the data into benchmarks.
 
 ----------
 
