@@ -12,11 +12,11 @@ Overview
 
 
 **Before you can run any of the scripts, you will need to have [Python 3.x](https://www.python.org/downloads/), [pip](https://stackoverflow.com/questions/40868345/checking-whether-the-pip-is-installed), and the [requests](https://pypi.python.org/pypi/requests) module installed.**
-	> 1. Download this project by clicking on "Clone or Download" or by clicking [here](https://github.com/cfoster0/social_benchmarker/archive/master.zip).
-	> 2. Create an Excel or Google Sheets spreadsheet containing metadata for the peer artists you care about and export it to a .csv on your machine.
-	> 3. Run the extraction script, **run.py**, to get data from the social media accounts.
-	> 4. Wait . . . Los Angeles wasn't built in a day.
-	> 5. Run the analysis script, **generate_report.py**, to convert the data into benchmarks.
+> 1. Download this project by clicking on "Clone or Download" or by clicking [here](https://github.com/cfoster0/social_benchmarker/archive/master.zip).
+> 2. Create an Excel or Google Sheets spreadsheet containing metadata for the peer artists you care about and export it to a .csv on your machine.
+> 3. Run the extraction script, **run.py**, to get data from the social media accounts.
+> 4. Wait . . . Los Angeles wasn't built in a day.
+> 5. Run the analysis script, **generate_report.py**, to convert the data into benchmarks.
 
 ----------
 
@@ -35,7 +35,7 @@ Walkthrough
 | ADULT CONTEMP | Quiet Riot       | quietriot              | 17-01-01 00:00:00 | 17-12-31 23:59:59 |
 
 Once this spreadsheet has been created, you will need to export it to a .csv file so it can be easily read later on. 
-	> **FYI:** This conversion will ignore formatting, convert all values into plain text, and separate them by commas and line breaks instead of columns and rows. Excel may warn you of this, but don't worry: we are doing that intentionally.
+> **FYI:** This conversion will ignore formatting, convert all values into plain text, and separate them by commas and line breaks instead of columns and rows. Excel may warn you of this, but don't worry: we are doing that intentionally.
 
 ----------
 
@@ -82,7 +82,7 @@ The .csv file should be the one you converted earlier from your spreadsheet.
 
 Once it has finished running, it should have saved its data as .json files within whatever folder you specified as your `results` directory.
 
-> **Tip:**: Pressing <kbd>Ctrl+Z</kbd> will pause a Python script by suspending its process, and it can be resumed with `fg %1`. If you need to completely stop the script, <kbd>Ctrl+C</kbd> will kill the script.
+> **Tip:** Pressing <kbd>Ctrl+Z</kbd> will pause a Python script by suspending its process, and it can be resumed with `fg %1`. If you need to completely stop the script, <kbd>Ctrl+C</kbd> will kill the script.
 
 ----------
 
@@ -100,5 +100,3 @@ This script should run quickly, and once completed, spit out a .csv with the cal
 Enjoy!
 
 C & T
-
-----------
