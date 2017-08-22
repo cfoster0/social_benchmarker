@@ -18,7 +18,6 @@ def main():
 	parser.add_argument("data", help="Set the directory profile data can be read from.")
 	parser.add_argument("results", help="Set the .csv file where the results should be stored.")
 	parser.add_argument("platform", type=str, choices=['facebook', 'instagram', 'youtube'])
-	#SKETU(JGNEHRE)
 
 	args = parser.parse_args()
 
@@ -45,7 +44,7 @@ def read_profile_data(fname, dirname, platform):
 		reader = csv.reader(csvfile, delimiter=',', quotechar='|')
 		
 		for row in reader:
-			if os.path.exists(os.getcwd() + '/' + dirname + '/' + platform + '/' + row[1] + '.json'):
+			if os.path.exists("{cwd}/{dir}/{plat}/{name}.json".format(cwd=os.getcwd(), dir=dirname, plat=platform, name=row[1])):
 				profile_genres = []
 				for genre in row[0].split('/'):
 					if genre in GENRES:
@@ -93,7 +92,7 @@ def profile_stats(name, dirname, platform):
 		platform: The name of the platform the data comes from.
 	"""
 
-	with open(os.getcwd() + '/' + dirname + '/' + platform + '/' + name + '.json') as f:
+	with open("{cwd}/{dir}/{plat}/{name}.json".format(cwd=os.getcwd(), dir=dirname, plat=platform, name=row[1])) as f:
 		data = json.load(f)
 
 	size = data['Follower_Count']
