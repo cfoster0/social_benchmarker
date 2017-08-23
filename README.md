@@ -35,7 +35,7 @@ Walkthrough
 | ADULT CONTEMP | Quiet Riot       | quietriot              | 17-01-01 00:00:00 | 17-12-31 23:59:59 |
 
 Once this spreadsheet has been created, you will need to export it to a .csv file so it can be easily read later on. 
-> **FYI:** This conversion will ignore formatting, convert all values into plain text, and separate them by commas and line breaks instead of columns and rows. Excel may warn you of this, but don't worry: we are doing that intentionally.
+> **Note:** This conversion will ignore formatting, convert all values into plain text, and separate them by commas and line breaks instead of columns and rows. Excel may warn you of this, but don't worry: we are doing that intentionally.
 
 ----------
 
@@ -130,7 +130,7 @@ Engagement Ratio:
 (Likes + Dislikes + Comments + Favorites) / Views
 ```
 
-> **Note:** Since view count statistics are public on YouTube, we can get a more precise read of engagement ratio 
+> **Note:** Since view count statistics are public on YouTube, we can get a more precise read of engagement ratio.
 
 
 This script should run quickly, and once completed, spit out a .csv with the calculated benchmarks.
