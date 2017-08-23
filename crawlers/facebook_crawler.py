@@ -1,14 +1,14 @@
 import requests, os, time, json, warnings, argparse, sys
 
 from datetime import datetime
-from crawler_proto import CrawlerProto, ProfileData
+from crawlers.crawler_proto import CrawlerProto, ProfileData
 
 class FacebookCrawler(CrawlerProto):
 
 	def __init__(self, results_directory):
 		results_directory = results_directory + '/facebook/'
-        if not os.path.isdir(results_directory):
-            os.mkdir(results_directory)
+		if not os.path.isdir(results_directory):
+			os.mkdir(results_directory)
 		self.results_directory = results_directory
 
 	def query(self, query_data):
@@ -184,11 +184,11 @@ class FacebookCrawler(CrawlerProto):
 			Either the feed count or a None object, if the count cannot be accessed.
 		"""
 
-			feedType_req = feedType_req['feedType_req'] if 'feedType_req' in feedType_req else feedType_req
-			if 'type' in feedType_req:
-				return feedType_req['type']
-			else:
-				return None
+		feedType_req = feedType_req['feedType_req'] if 'feedType_req' in feedType_req else feedType_req
+		if 'type' in feedType_req:
+			return feedType_req['type']
+		else:
+			return None
 
 	def _getMessage(self, message_req):
 
@@ -199,11 +199,11 @@ class FacebookCrawler(CrawlerProto):
 			Either the message or a None object, if the message cannot be accessed.
 		"""
 
-			message_req = message_req['message_req'] if 'message_req' in message_req else message_req
-			if 'message' in message_req:
-				return message_req['message'] 
-			else:
-				return None
+		message_req = message_req['message_req'] if 'message_req' in message_req else message_req
+		if 'message' in message_req:
+			return message_req['message'] 
+		else:
+			return None
 
 	def _getOptimizedReactions(self, opt_reactions):
 
@@ -214,25 +214,24 @@ class FacebookCrawler(CrawlerProto):
 			reactions_count_dict1: A formatted dictionary of the reactions to a post.
 		"""
 
-			opt_reactions = opt_reactions['opt_reactions'] if 'opt_reactions' in opt_reactions else opt_reactions
-			like = ((opt_reactions['LIKE'])['summary'])['total_count']
-			love = ((opt_reactions['LOVE'])['summary'])['total_count']
-			haha = ((opt_reactions['HAHA'])['summary'])['total_count']
-			wow = ((opt_reactions['WOW'])['summary'])['total_count']
-			sad = ((opt_reactions['SAD'])['summary'])['total_count']
-			angry =((opt_reactions['ANGRY'])['summary'])['total_count']
+		opt_reactions = opt_reactions['opt_reactions'] if 'opt_reactions' in opt_reactions else opt_reactions
+		like = ((opt_reactions['LIKE'])['summary'])['total_count']
+		love = ((opt_reactions['LOVE'])['summary'])['total_count']
+		haha = ((opt_reactions['HAHA'])['summary'])['total_count']
+		wow = ((opt_reactions['WOW'])['summary'])['total_count']
+		sad = ((opt_reactions['SAD'])['summary'])['total_count']
+		angry =((opt_reactions['ANGRY'])['summary'])['total_count']
 
-			reactions_count_dict1 = {
-				'like': like,
-				'love': love,
-				'haha': haha,
-				'wow': wow,
-				'sad': sad,
-				'angry': angry
-			}
+		reactions_count_dict1 = {
+			'like': like,
+			'love': love,
+			'haha': haha,
+			'wow': wow,
+			'sad': sad,
+			'angry': angry
+		}
 
-
-			return reactions_count_dict1
+		return reactions_count_dict1
 
 	def _getShares(self, share_url):
 

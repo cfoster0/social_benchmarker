@@ -2,15 +2,15 @@ import requests, sys, os, time, json, warnings, argparse, sys
 
 from datetime import datetime
 import pathos.pools as pp 
-from crawler_proto import CrawlerProto, ProfileData
+from crawlers.crawler_proto import CrawlerProto, ProfileData
 
 
 class InstagramCrawler(CrawlerProto):
 
 	def __init__(self, results_directory):
 		results_directory = results_directory + '/instagram/'
-        if not os.path.isdir(results_directory):
-            os.mkdir(results_directory)
+		if not os.path.isdir(results_directory):
+			os.mkdir(results_directory)
 		self.results_directory = results_directory
 		self._session = requests.Session()
 
