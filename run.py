@@ -2,9 +2,9 @@ import argparse
 
 import pathos.multiprocessing as mp
 
-from facebook_crawler import FacebookCrawler
-from instagram_crawler import InstagramCrawler
-from youtube_crawler import YouTubeCrawler
+from crawlers.facebook_crawler import FacebookCrawler
+from crawlers.instagram_crawler import InstagramCrawler
+from crawlers.youtube_crawler import YouTubeCrawler
 
 facebook_app = None # Fill me in with your Facebook application ID
 facebook_secret = None # Fill me in with your Facebook application secret

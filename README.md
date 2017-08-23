@@ -72,9 +72,9 @@ This key is what you need to substitute in **run.py** for `youtube_key`.
 
 #### Running the extraction script
 
-**run.py** within the [crawlers](crawlers) directory is what you need to run in order to pull data from Facebook, Instagram, or YouTube. It can be run from inside the project with Unix commands of the form `python3 run.py [platform] [input] [data folder]` like:
+[**run.py**](run.py) within is what you need to run in order to pull data from Facebook, Instagram, or YouTube. It can be run from inside the project with Unix commands of the form `python3 run.py [platform] [input] [data folder]` like:
 ```
-python3 ./crawlers/run.py facebook FacebookArtists.csv ./results/
+python3 run.py facebook FacebookArtists.csv results
 ```
 Each social media service has its own flag, which you must specify to run the script. `facebook` is for Facebook, `instagram` is for Instagram, and `youtube` is for YouTube.
 
@@ -87,7 +87,7 @@ Once it has finished running, it should have saved its data as .json files withi
 ----------
 
 #### Running the analysis script
-**generate_report.py** is what you need to turn the data you have collected into a set of benchmarks. 
+[**generate_report.py**](generate_report.py) is what you need to turn the data you have collected into a set of benchmarks. 
 
 It can be run from inside the project with Unix commands of the form `python3 generate_report.py [platform] [input] [data folder] [output]` like:
 ```
