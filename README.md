@@ -95,6 +95,44 @@ python3 generate_report.py instagram InstagramArtists.csv InstagramBenchmarks.cs
 ```
 Similar to the extraction script, each social media service has its own flag that must be specified to run analysis. `facebook` for Facebook, `instagram` for Instagram, and `youtube` for YouTube.
 
+We calculate the average per-post engagement and engagement ratio as follows:
+
+##### Facebook Metrics
+Engagement:
+```
+Shares + Comments + Reactions
+```
+
+Engagement Ratio:
+```
+(Shares + Comments + Reactions) / Follower Count
+```
+
+##### Instagram Metrics
+Engagement:
+```
+Likes + Comments
+```
+
+Engagement Ratio:
+```
+(Likes + Comments) / Follower Count
+```
+
+##### YouTube Metrics
+Engagement:
+```
+Likes + Dislikes + Comments + Favorites
+```
+
+Engagement Ratio:
+```
+(Likes + Dislikes + Comments + Favorites) / Views
+```
+
+> **Note:** Since view count statistics are public on YouTube, we can get a more precise read of engagement ratio 
+
+
 This script should run quickly, and once completed, spit out a .csv with the calculated benchmarks.
 
 Enjoy!
